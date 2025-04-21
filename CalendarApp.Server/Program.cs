@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 
 namespace CalendarApp.Server
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -30,24 +31,45 @@ namespace CalendarApp.Server
 
             app.UseAuthorization();
 
-            var summaries = new[]
-            {
-                "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-            };
+            // Initialize the database
+            await using var dbContext = new AppDbContext();
+            await dbContext.Database.EnsureCreatedAsync();
 
-            app.MapGet("/weatherforecast", (HttpContext httpContext) =>
+            // User endpoints
+
+            // Create a new user
+            app.MapPost("/users", async (UserDto inputtedUser) =>
             {
-                var forecast = Enumerable.Range(1, 5).Select(index =>
-                    new WeatherForecast
-                    {
-                        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                        TemperatureC = Random.Shared.Next(-20, 55),
-                        Summary = summaries[Random.Shared.Next(summaries.Length)]
-                    })
-                    .ToArray();
-                return forecast;
+                // Check if the user already exists
+                bool userExists = dbContext.Users.Any(u => u.Name == inputtedUser.Name);
+                if (userExists)
+                {
+                    return Results.Conflict("User already exists.");
+                }
+                
+                // Validate the inputted user data
+                var newUser = new User // Use the User type from CalendarApp.Server.Models
+                {
+                    Name = inputtedUser.Name,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Add the new user to the database
+                dbContext.Users.Add(newUser);
+
+                // Save changes to the database
+                await dbContext.SaveChangesAsync();
+                return Results.Created($"/users/{newUser.Id}", newUser);
             })
-            .WithName("GetWeatherForecast")
+            .WithName("CreateUser")
+            .WithOpenApi();
+
+            app.MapGet("/users", () =>
+            {
+                var users = dbContext.Users.ToList();
+                return Results.Ok(users);
+            })
+            .WithName("GetUsers")
             .WithOpenApi();
 
             app.MapFallbackToFile("/index.html");
