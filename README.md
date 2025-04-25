@@ -7,7 +7,7 @@ This is a calendar application built using React + .NET minimal application
 
 **Client:** React, Zustand, Mui
 
-**Server:** .Net , EntityFramwork
+**Server:** .Net , EntityFramwork, PostgreSql
 
 
 ## Requirements
