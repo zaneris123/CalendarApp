@@ -56,8 +56,8 @@ export function Login() {
             })
             .then(createdUser => {
                 console.log("User created:", createdUser);
-                setNewUserName(''); // Clear input
-                setUserInStore(createdUser); // Log in the newly created user
+                setNewUserName('');
+                setUserInStore(createdUser);
             })
             .catch(error => {
                 console.error("Error creating user:", error);
@@ -102,6 +102,8 @@ export function Login() {
                     variant="outlined"
                     value={newUserName}
                     onChange={(e) => setNewUserName(e.target.value)}
+                    error={newUserName.length < 3 || newUserName.length > 30 || !/^[\w\s.,'!&()\-]+$/.test(newUserName)}
+                    helperText={newUserName.length < 3 || newUserName.length > 30 || !/^[\w\s.,'!&()\-]+$/.test(newUserName) ? "Username must be between 3 and 30 characters and can only contain letters, numbers, and certain special characters." : ""}
                 />
                 <Button
                     variant="contained"
