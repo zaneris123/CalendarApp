@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace CalendarApp.Server
 {
@@ -8,8 +9,20 @@ namespace CalendarApp.Server
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddAuthorization();
+
+            // CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builder => builder.WithOrigins("https://localhost:50068") // Corrected to HTTPS
+                                      .AllowAnyHeader()
+                                      .AllowAnyMethod());
+            });
+
+            // Ensure DbContext is registered with a scoped lifetime
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -29,16 +42,14 @@ namespace CalendarApp.Server
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseCors("AllowSpecificOrigin"); 
 
-            // Initialize the database
-            await using var dbContext = new AppDbContext();
-            await dbContext.Database.EnsureCreatedAsync();
+            app.UseAuthorization();
 
             // User endpoints
 
             // Create a new user
-            app.MapPost("/users", async (UserDto inputtedUser) =>
+            app.MapPost("/createusers", async (UserDto inputtedUser, AppDbContext dbContext) =>
             {
                 // Check if the user already exists
                 bool userExists = dbContext.Users.Any(u => u.Name == inputtedUser.Name);
@@ -64,8 +75,10 @@ namespace CalendarApp.Server
             .WithName("CreateUser")
             .WithOpenApi();
 
-            app.MapGet("/users", () =>
+            // Get all users
+            app.MapGet("/users", (AppDbContext dbContext) =>
             {
+                // Retrieve all users from the database
                 var users = dbContext.Users.ToList();
                 return Results.Ok(users);
             })

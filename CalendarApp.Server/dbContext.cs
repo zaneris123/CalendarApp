@@ -2,8 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class AppDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; } = null!;
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    => optionsBuilder.UseNpgsql("");
+    public DbSet<User> Users { get; set; } = null!;
 }
