@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CalendarApp.Server
 {
@@ -20,7 +22,6 @@ namespace CalendarApp.Server
                                       .AllowAnyMethod());
             });
 
-            // Ensure DbContext is registered with a scoped lifetime
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -49,8 +50,16 @@ namespace CalendarApp.Server
             // User endpoints
 
             // Create a new user
-            app.MapPost("/createusers", async (UserDto inputtedUser, AppDbContext dbContext) =>
+            app.MapPost("/users", async (UserDto inputtedUser, AppDbContext dbContext) =>
             {
+                // Validate the inputted user data
+                var validationResults = new List<ValidationResult>();
+                var validationContext = new ValidationContext(inputtedUser);
+                if (!Validator.TryValidateObject(inputtedUser, validationContext, validationResults, true))
+                {
+                    return Results.BadRequest(validationResults);
+                }
+
                 // Check if the user already exists
                 bool userExists = dbContext.Users.Any(u => u.Name == inputtedUser.Name);
                 if (userExists)
@@ -58,8 +67,7 @@ namespace CalendarApp.Server
                     return Results.Conflict("User already exists.");
                 }
                 
-                // Validate the inputted user data
-                var newUser = new User // Use the User type from CalendarApp.Server.Models
+                var newUser = new User
                 {
                     Name = inputtedUser.Name,
                     CreatedAt = DateTime.UtcNow
@@ -88,6 +96,14 @@ namespace CalendarApp.Server
             // Create a new event
             app.MapPost("/events", async (EventDto inputtedEvent, AppDbContext dbContext) =>
             {
+                // Validate the inputted event data
+                var validationResults = new List<ValidationResult>();
+                var validationContext = new ValidationContext(inputtedEvent);
+                if (!Validator.TryValidateObject(inputtedEvent, validationContext, validationResults, true))
+                {
+                    return Results.BadRequest(validationResults);
+                }
+
                 // Check if the user exists
                 bool userExists = dbContext.Users.Any(u => u.Id == inputtedEvent.UserId);
                 if (!userExists)
@@ -117,7 +133,6 @@ namespace CalendarApp.Server
                     return Results.Conflict("Event overlaps with an existing event.");
                 }
 
-                // Validate the inputted event data
                 var newEvent = new Event
                 {
                     Title = inputtedEvent.Title,

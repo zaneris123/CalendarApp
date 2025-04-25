@@ -17,12 +17,12 @@ public class EventDto
     [StringLength(30, ErrorMessage = "Event title cannot exceed 30 characters.")]
     [RegularExpression(@"^[\w\s.,'!&()\-]+$", ErrorMessage = "Event title can contain letters, numbers, spaces, and common punctuation.")]
     [MinLength(3, ErrorMessage = "Event title must be at least 3 characters long.")]
-
     public required string Title { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Event description is required.")]
     [StringLength(100, ErrorMessage = "Event description cannot exceed 100 characters.")]
     [RegularExpression(@"^[\w\s.,'!&()\-]+$", ErrorMessage = "Event description can contain letters, numbers, spaces, and common punctuation.")]
+    [MinLength(10, ErrorMessage = "Event description must be at least 10 characters long.")]
     public required string Description { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Start date is required.")]
