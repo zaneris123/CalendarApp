@@ -6,7 +6,6 @@ import { Calendar } from './components/calendar';
 import { Box } from '@mui/material';
 
 function App() {
-    const [forecasts, setForecasts] = useState();
 
     useEffect(() => {
     }, []);
@@ -18,6 +17,7 @@ function App() {
             {user == null ? <Login/> : 
             <div>
                 <p>Welcome {user.name}</p>
+                <button onClick={() => useUserStore.getState().clearUser()}>Logout</button>
                 <Calendar/>
             </div>}
         </Box>
