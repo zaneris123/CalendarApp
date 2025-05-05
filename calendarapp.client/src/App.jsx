@@ -13,7 +13,7 @@ function App() {
     const user = useUserStore((state) => state.user);
     
     return (
-        <Box sx={{backgroundColor: 'grey', padding: '10px'}} className="App">
+        <Box sx={{backgroundColor: '#b5b5b5', padding: '10px'}} className="App">
             {user == null ? <Login/> : 
             <div>
                 <p>Welcome {user.name}</p>

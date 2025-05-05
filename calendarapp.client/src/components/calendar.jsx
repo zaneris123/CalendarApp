@@ -134,11 +134,20 @@ export function Calendar() {
             <Button
               variant="contained"
               onClick={() => {
+                const startDateTime = dayjs(selectedDate)
+                  .hour(dayjs(eventStartDate).hour())
+                  .minute(dayjs(eventStartDate).minute())
+                  .utc();
+                const endDateTime = dayjs(selectedDate)
+                  .hour(dayjs(eventEndDate).hour())
+                  .minute(dayjs(eventEndDate).minute())
+                  .utc();
+
                 const newEvent = {
                   title: eventTitle,
                   description: eventDescription,
-                  startDate: dayjs(eventStartDate).utc(),
-                  endDate: dayjs(eventEndDate).utc(),
+                  startDate: startDateTime,
+                  endDate: endDateTime,
                   userId: user.id,
                 };
 
