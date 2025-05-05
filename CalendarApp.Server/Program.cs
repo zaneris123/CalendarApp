@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CalendarApp.Server
@@ -10,8 +8,6 @@ namespace CalendarApp.Server
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services.AddAuthorization();
 
             // CORS
             builder.Services.AddCors(options =>
@@ -44,8 +40,6 @@ namespace CalendarApp.Server
             app.UseHttpsRedirection();
 
             app.UseCors("AllowSpecificOrigin"); 
-
-            app.UseAuthorization();
 
             // User endpoints
 
